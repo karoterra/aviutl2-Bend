@@ -18,7 +18,7 @@ def insert_dictionary(text: str, dictionary: dict) -> str:
 
 def main():
     AUTHOR = "karoterra"
-    VERSION = "v0.1.0"
+    VERSION = "v1.0.0"
 
     build_dir = Path("build")
     build_dir.mkdir(exist_ok=True)

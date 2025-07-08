@@ -28,3 +28,6 @@ AviUtl ExEdit2 version 2.0beta1 にて動作確認しました。
 詳細は [LICENSE](LICENSE) を参照してください。
 
 ## Change Log
+
+### v1.0.0 (2025-07-09)
+- 初版公開
