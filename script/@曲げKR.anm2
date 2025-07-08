@@ -1,0 +1,169 @@
+--[[
+  曲げKR for AviUtl2 v0.1.0 by karoterra
+]]
+
+@円弧
+--information:曲げKR for AviUtl2 v0.1.0 by karoterra
+--label:変形
+--track@curvature:曲率,-10000,10000,0,0.01
+--track@rate:割合,0,100,0,0.01
+--track@div:分割数,1,5000,16,1
+--track@subdiv:細分化,1,10,1,1
+--check@visibleAnchor:アンカー表示,1
+--check@startMode:始点,1
+--check@endMode:終点,1
+--check@collapse:破綻回避,1
+--select@centerMode:中心=0,オリジナルの中心=0,変形後の中心=1,赤マーカー=2,青マーカー=3,緑マーカー=4,マゼンダマーカー=5,シアンマーカー=6
+--value@pos:アンカー,{0,100,0,-100}
+
+local B = require("KaroterraBend")
+local markerSize = 25
+
+if #pos < 4 then
+  pos = {pos[1] or 0, pos[2] or 0, pos[3] or 0, pos[4] or 0}
+end
+obj.setanchor("pos", 2)
+
+local curvature = curvature / 10000
+local radius = 1 / curvature
+local rate = rate / 100
+local div = math.floor(div)
+local visibleAnchor = visibleAnchor ~= 0
+local startMode = startMode or 1
+local endMode = endMode or 1
+local centerMode = centerMode or 0
+local collapse = collapse or 1
+local subdiv = math.max(math.floor(subdiv or 1), 1)
+
+local w, h = obj.getpixel()
+local ancS = {B.clamp(pos[1], -w/2, w/2), B.clamp(pos[2], -h/2, h/2)}
+local ancE = {B.clamp(pos[3], -w/2, w/2), B.clamp(pos[4], -h/2, h/2)}
+local ancC = {(1-rate)*ancS[1] + rate*ancE[1], (1-rate)*ancS[2] + rate*ancE[2]}
+local curvS, curvE = ancS, ancE
+
+local ancRad = math.atan2(ancE[2] - ancS[2], ancE[1] - ancS[1])
+local ancDist = math.sqrt((ancE[1]-ancS[1])^2 + (ancE[2]-ancS[2])^2)
+local curvSRad = ancRad - math.pi / 2
+local curvERad = ancRad - math.pi / 2
+
+local srcS, srcE, srcI = B.createSrc(ancS, ancE, w, h, div)
+local dstS, dstE, dstI = {}, {}, {}
+
+-- 変換
+if curvature == 0 then
+  for i = 1, #srcI do
+    dstI[i] = {}
+    for j = 1, #srcI[i], 2 do
+      dstI[i][j] = srcI[i][j] - w/2
+      dstI[i][j+1] = srcI[i][j+1] - h/2
+    end
+  end
+else
+  local curvRad = ancRad + math.pi / 2
+  local curvC = {ancC[1] + radius*math.cos(curvRad), ancC[2] + radius*math.sin(curvRad)}
+  curvSRad = curvRad - math.pi - rate * ancDist / radius
+  curvERad = curvRad - math.pi + (1-rate) * ancDist / radius
+  curvS = {curvC[1] + radius*math.cos(curvSRad), curvC[2] + radius*math.sin(curvSRad)}
+  curvE = {curvC[1] + radius*math.cos(curvERad), curvC[2] + radius*math.sin(curvERad)}
+  local c, s = math.cos(-ancRad+math.pi/2), math.sin(-ancRad+math.pi/2)
+
+  for i = 1, #srcI do
+    dstI[i] = {}
+    for j = 1, #srcI[i], 2 do
+      local x, y = srcI[i][j] - w/2, srcI[i][j+1] - h/2
+      local u, v = x-ancS[1], y-ancS[2]
+      u, v = u*c-v*s, u*s+v*c
+      local r = radius + u
+      local rad = curvSRad + v / radius
+      dstI[i][j] = curvC[1] + r * math.cos(rad)
+      dstI[i][j+1] = curvC[2] + r * math.sin(rad)
+    end
+    if collapse == 1 then
+      srcI[i], dstI[i] = B.fixCollapse(srcI[i], dstI[i])
+    end
+  end
+end
+
+for i = 1, #srcS do
+  dstS[i] = B.transformEdge(srcS[i], ancS, curvS, curvSRad-ancRad+math.pi/2, w, h)
+end
+for i = 1, #srcE do
+  dstE[i] = B.transformEdge(srcE[i], ancE, curvE, curvERad-ancRad+math.pi/2, w, h)
+end
+
+-- キャンバス
+local range = {dstI[1][1],dstI[1][1], dstI[1][2],dstI[1][2]}
+B.calcRange(dstI, range)
+if startMode == 1 then B.calcRange(dstS, range) end
+if endMode == 1 then B.calcRange(dstE, range) end
+if visibleAnchor then
+  range[1] = math.min(range[1],-w/2) - markerSize/2
+  range[2] = math.max(range[2], w/2) + markerSize/2
+  range[3] = math.min(range[3],-h/2) - markerSize/2
+  range[4] = math.max(range[4], h/2) + markerSize/2
+end
+local ox, oy = (range[2] + range[1]) / 2, (range[4] + range[3]) / 2
+
+-- 描画
+obj.setoption("drawtarget", "tempbuffer", range[2]-range[1], range[4]-range[3])
+
+if visibleAnchor then
+  obj.draw(-ox,-oy,0, 1, 0.5)
+end
+
+obj.setoption("blend", "alpha_add2")
+if startMode == 1 then
+  for i = 1, #srcS do B.drawpoly(obj, dstS[i], ox, oy, srcS[i]) end
+end
+if subdiv > 1 then
+  for i = 1, #srcI do B.subdivDrawpoly(obj, dstI[i], ox,oy, srcI[i], subdiv) end
+else
+  for i = 1, #srcI do B.drawpoly(obj, dstI[i], ox, oy, srcI[i]) end
+end
+if endMode == 1 then
+  for i = 1, #srcE do B.drawpoly(obj, dstE[i], ox, oy, srcE[i]) end
+end
+
+-- アンカー表示
+if visibleAnchor then
+  B.drawMarker(obj, curvS[1]-ox, curvS[2]-oy, 0xff00ff, markerSize)
+  B.drawMarker(obj, curvE[1]-ox, curvE[2]-oy, 0x00ffff, markerSize)
+  B.drawMarker(obj, ancC[1]-ox, ancC[2]-oy, 0x00ff00, markerSize)
+  B.drawMarker(obj, ancS[1]-ox, ancS[2]-oy, 0xff0000, markerSize)
+  B.drawMarker(obj, ancE[1]-ox, ancE[2]-oy, 0x0000ff, markerSize)
+end
+
+obj.setoption("drawtarget", "framebuffer")
+obj.load("tempbuffer")
+if centerMode == 1 then
+  obj.ox = obj.ox + ox
+  obj.oy = obj.oy + oy
+elseif centerMode == 2 then
+  obj.ox = obj.ox + ancS[1]
+  obj.oy = obj.oy + ancS[2]
+  obj.cx = obj.cx - ox + ancS[1]
+  obj.cy = obj.cy - oy + ancS[2]
+elseif centerMode == 3 then
+  obj.ox = obj.ox + ancE[1]
+  obj.oy = obj.oy + ancE[2]
+  obj.cx = obj.cx - ox + ancE[1]
+  obj.cy = obj.cy - oy + ancE[2]
+elseif centerMode == 4 then
+  obj.ox = obj.ox + ancC[1]
+  obj.oy = obj.oy + ancC[2]
+  obj.cx = obj.cx - ox + ancC[1]
+  obj.cy = obj.cy - oy + ancC[2]
+elseif centerMode == 5 then
+  obj.ox = obj.ox + curvS[1]
+  obj.oy = obj.oy + curvS[2]
+  obj.cx = obj.cx - ox + curvS[1]
+  obj.cy = obj.cy - oy + curvS[2]
+elseif centerMode == 6 then
+  obj.ox = obj.ox + curvE[1]
+  obj.oy = obj.oy + curvE[2]
+  obj.cx = obj.cx - ox + curvE[1]
+  obj.cy = obj.cy - oy + curvE[2]
+else
+  obj.cx = obj.cx - ox
+  obj.cy = obj.cy - oy
+end
