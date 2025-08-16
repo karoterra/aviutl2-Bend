@@ -1,15 +1,54 @@
 --information:${INFO} ${VERSION} by ${AUTHOR}
 --label:変形
---track@curvature:曲率,-10000,10000,0,0.01
---track@rate:割合,0,100,0,0.01
---track@div:分割数,1,5000,16,1
---track@subdiv:細分化,1,10,1,1
---check@visibleAnchor:アンカー表示,1
---check@startMode:始点,1
---check@endMode:終点,1
---check@collapse:破綻回避,1
---select@centerMode:中心=0,オリジナルの中心=0,変形後の中心=1,赤マーカー=2,青マーカー=3,緑マーカー=4,マゼンダマーカー=5,シアンマーカー=6
---value@pos:アンカー,{0,100,0,-100}
+
+---$track:曲率
+---min=-10000
+---max=10000
+---step=0.01
+local curvature = 0
+
+---$track:割合
+---min=0
+---max=100
+---step=0.01
+local rate = 0
+
+---$track:分割数
+---min=1
+---max=5000
+---step=1
+local div = 16
+
+---$track:細分化
+---min=1
+---max=10
+---step=1
+local subdiv = 1
+
+---$check:アンカー表示
+local visibleAnchor = 1
+
+---$check:始点
+local startMode = 1
+
+---$check:終点
+local endMode = 1
+
+---$check:破綻回避
+local collapse = 1
+
+---$select:中心
+---オリジナルの中心=0
+---変形後の中心=1
+---赤マーカー=2
+---青マーカー=3
+---緑マーカー=4
+---マゼンダマーカー=5
+---シアンマーカー=6
+local centerMode = 0
+
+---$value:アンカー
+local pos = {0,100,0,-100}
 
 --[[
   曲率: 値が0から離れるほど曲がる
@@ -30,7 +69,7 @@ local markerSize = 25
 if #pos < 4 then
   pos = {pos[1] or 0, pos[2] or 0, pos[3] or 0, pos[4] or 0}
 end
-obj.setanchor("pos", 2)
+_ = obj.setanchor("pos", 2)
 
 local curvature = curvature / 10000
 local radius = 1 / curvature

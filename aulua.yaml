@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/karoterra/aviutl2-aulua/refs/heads/main/schema/aulua.schema.json
+project:
+  variables:
+    VERSION: v1.0.0
+    AUTHOR: karoterra
+
+build:
+  out_dir: build
+
+install:
+  out_dir: C:\ProgramData\aviutl2\Script\karoterra\
+
+scripts:
+  - name: "@曲げKR.anm2"
+    sources:
+      - path: script/@曲げKR.in.anm2
+        variables:
+          INFO: 曲げKR for AviUtl2
+      - path: script/@曲げKR_円弧.in.anm2
+        label: 円弧
+        variables:
+          INFO: 曲げKR (円弧) for AviUtl2
+      - path: script/@曲げKR_ベジェ曲線.in.anm2
+        label: ベジェ曲線
+        variables:
+          INFO: 曲げKR (ベジェ曲線) for AviUtl2
+
+  - name: KaroterraBend.lua
+    sources:
+      - path: script/KaroterraBend.lua
