@@ -363,6 +363,19 @@ local function drawpoly(obj, xy, ox, oy, uv, alpha)
   )
 end
 
+local function pushDrawpoly(data, xy, ox, oy, uv)
+  table.insert(data, {
+    xy[1]-ox, xy[2]-oy, 0, -- x0, y0, z0
+    xy[3]-ox, xy[4]-oy, 0, -- x1, y1, z1
+    xy[5]-ox, xy[6]-oy, 0, -- x2, y2, z2
+    xy[7]-ox, xy[8]-oy, 0, -- x3, y3, z3
+    uv[1], uv[2], -- u0, v0
+    uv[3], uv[4], -- u1, v1
+    uv[5], uv[6], -- u2, v2
+    uv[7], uv[8], -- u3, v3
+  })
+end
+
 -- polyをNxNに細分化して描画
 local function subdivDrawpoly(obj, xy, ox, oy, uv, N)
   local N2 = N*N
@@ -392,6 +405,36 @@ local function subdivDrawpoly(obj, xy, ox, oy, uv, N)
   end
 end
 
+local function pushSubdivDrawpoly(data, xy, ox, oy, uv, N)
+  local N2 = N*N
+  for i1=0,N-1 do
+    local i2, I1, I2 = i1+1, N-i1, N-i1-1
+    for j1=0,N-1 do
+      local j2, J1, J2 = j1+1, N-j1, N-j1-1
+      table.insert(data, {
+        -- xyz
+        (I1*J1*xy[1]+I1*j1*xy[3]+i1*j1*xy[5]+i1*J1*xy[7])/N2 - ox,
+        (I1*J1*xy[2]+I1*j1*xy[4]+i1*j1*xy[6]+i1*J1*xy[8])/N2 - oy, 0,
+        (I1*J2*xy[1]+I1*j2*xy[3]+i1*j2*xy[5]+i1*J2*xy[7])/N2 - ox,
+        (I1*J2*xy[2]+I1*j2*xy[4]+i1*j2*xy[6]+i1*J2*xy[8])/N2 - oy, 0,
+        (I2*J2*xy[1]+I2*j2*xy[3]+i2*j2*xy[5]+i2*J2*xy[7])/N2 - ox,
+        (I2*J2*xy[2]+I2*j2*xy[4]+i2*j2*xy[6]+i2*J2*xy[8])/N2 - oy, 0,
+        (I2*J1*xy[1]+I2*j1*xy[3]+i2*j1*xy[5]+i2*J1*xy[7])/N2 - ox,
+        (I2*J1*xy[2]+I2*j1*xy[4]+i2*j1*xy[6]+i2*J1*xy[8])/N2 - oy, 0,
+        -- uv
+        (I1*J1*uv[1]+I1*j1*uv[3]+i1*j1*uv[5]+i1*J1*uv[7])/N2,
+        (I1*J1*uv[2]+I1*j1*uv[4]+i1*j1*uv[6]+i1*J1*uv[8])/N2,
+        (I1*J2*uv[1]+I1*j2*uv[3]+i1*j2*uv[5]+i1*J2*uv[7])/N2,
+        (I1*J2*uv[2]+I1*j2*uv[4]+i1*j2*uv[6]+i1*J2*uv[8])/N2,
+        (I2*J2*uv[1]+I2*j2*uv[3]+i2*j2*uv[5]+i2*J2*uv[7])/N2,
+        (I2*J2*uv[2]+I2*j2*uv[4]+i2*j2*uv[6]+i2*J2*uv[8])/N2,
+        (I2*J1*uv[1]+I2*j1*uv[3]+i2*j1*uv[5]+i2*J1*uv[7])/N2,
+        (I2*J1*uv[2]+I2*j1*uv[4]+i2*j1*uv[6]+i2*J1*uv[8])/N2
+      })
+    end
+  end
+end
+
 Bend.sign = sign
 Bend.clamp = clamp
 Bend.cross = cross
@@ -409,5 +452,7 @@ Bend.drawMarker = drawMarker
 Bend.drawLine = drawLine
 Bend.drawpoly = drawpoly
 Bend.subdivDrawpoly = subdivDrawpoly
+Bend.pushDrawpoly = pushDrawpoly
+Bend.pushSubdivDrawpoly = pushSubdivDrawpoly
 
 return Bend
