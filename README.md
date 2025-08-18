@@ -7,7 +7,7 @@
 
 ## 動作環境
 
-AviUtl ExEdit2 version 2.0beta1 にて動作確認しました。
+AviUtl ExEdit2 version 2.0beta7 にて動作確認しました。
 
 ## 導入方法
 
@@ -15,6 +15,9 @@ AviUtl ExEdit2 version 2.0beta1 にて動作確認しました。
 2. ZIP ファイルを展開し、以下のファイルを `C:\ProgramData\aviutl2\Script\` または `C:\ProgramData\aviutl2\Script\<任意の名前>\` に配置してください。
    - `KaroterraBend.lua`
    - `@曲げKR.anm2`
+
+> [!NOTE]
+> `aviutl2.exe` と同じ階層に `data` フォルダを作っている場合はそちらに配置してください。
 
 ## 使い方
 
@@ -28,6 +31,9 @@ AviUtl ExEdit2 version 2.0beta1 にて動作確認しました。
 詳細は [LICENSE](LICENSE) を参照してください。
 
 ## Change Log
+
+### v1.0.1 (2025-08-19)
+- drawpolyの効率化による描画速度向上 ([#1](https://github.com/karoterra/aviutl2-Bend/pull/1))
 
 ### v1.0.0 (2025-07-09)
 - 初版公開

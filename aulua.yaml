@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/karoterra/aviutl2-aulua/refs/heads/main/schema/aulua.schema.json
 project:
   variables:
-    VERSION: v1.0.0
+    VERSION: v1.0.1
     AUTHOR: karoterra
 
 build:
@@ -28,3 +28,5 @@ scripts:
   - name: KaroterraBend.lua
     sources:
       - path: script/KaroterraBend.lua
+        variables:
+          INFO: 曲げKR 用共通モジュール for AviUtl2

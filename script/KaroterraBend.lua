@@ -1,5 +1,5 @@
 --[[
-  曲げKR v1.0.0 by karoterra
+  ${INFO} ${VERSION} by ${AUTHOR}
 ]]
 
 local Bend = {}
