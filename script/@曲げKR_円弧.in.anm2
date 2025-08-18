@@ -158,18 +158,19 @@ if visibleAnchor then
   obj.draw(-ox,-oy,0, 1, 0.5)
 end
 
-obj.setoption("blend", "alpha_add2")
+local drawdata = {}
 if startMode == 1 then
-  for i = 1, #srcS do B.drawpoly(obj, dstS[i], ox, oy, srcS[i]) end
+  for i = 1, #srcS do B.pushDrawpoly(drawdata, dstS[i], ox, oy, srcS[i]) end
 end
 if subdiv > 1 then
-  for i = 1, #srcI do B.subdivDrawpoly(obj, dstI[i], ox,oy, srcI[i], subdiv) end
+  for i = 1, #srcI do B.pushSubdivDrawpoly(drawdata, dstI[i], ox,oy, srcI[i], subdiv) end
 else
-  for i = 1, #srcI do B.drawpoly(obj, dstI[i], ox, oy, srcI[i]) end
+  for i = 1, #srcI do B.pushDrawpoly(drawdata, dstI[i], ox, oy, srcI[i]) end
 end
 if endMode == 1 then
-  for i = 1, #srcE do B.drawpoly(obj, dstE[i], ox, oy, srcE[i]) end
+  for i = 1, #srcE do B.pushDrawpoly(drawdata, dstE[i], ox, oy, srcE[i]) end
 end
+obj.drawpoly(drawdata)
 
 -- アンカー表示
 if visibleAnchor then
